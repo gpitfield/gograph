@@ -40,14 +40,14 @@ func (g *Graph) Cleanup() {
 }
 
 type Vertex struct {
-	id     string
-	int_id int
+	Id     string
+	Int_id int
 }
 
 type Edge struct {
-	from_id string
-	to_id   string
-	weight  float64
+	FromId string
+	ToId   string
+	Weight float64
 }
 
 // Go type wrapping an igraph vector (*not* the same as a C array)
@@ -101,28 +101,28 @@ func (g *Graph) PopulateFromEdges(edges *[]Edge) {
 	var from_id, to_id int
 	i := 0
 	for c, el := range *edges {
-		if id, ok := vertices[el.from_id]; ok {
+		if id, ok := vertices[el.FromId]; ok {
 			from_id = id
 		} else {
-			vertices[el.from_id] = i
-			g.vertices = append(g.vertices, Vertex{el.from_id, i})
+			vertices[el.FromId] = i
+			g.vertices = append(g.vertices, Vertex{el.FromId, i})
 			i += 1
 		}
-		if id, ok := vertices[el.to_id]; ok {
+		if id, ok := vertices[el.ToId]; ok {
 			to_id = id
 		} else {
-			vertices[el.to_id] = i
-			g.vertices = append(g.vertices, Vertex{el.to_id, i})
+			vertices[el.ToId] = i
+			g.vertices = append(g.vertices, Vertex{el.ToId, i})
 			i += 1
 		}
 		g.edges.SetInt(from_id, c*2)
 		g.edges.SetInt(to_id, c*2+1)
-		g.weights.SetFloat(el.weight, i)
+		g.weights.SetFloat(el.Weight, i)
 	}
 	C.igraph_create(g.graph, g.edges.vec, 0, C.IGRAPH_DIRECTED)
 }
 
-func PageRank(edges *[]Edge, damping float64) *map[string]float64 {
+func PageRank(edges *[]Edge, damping float64, multiplier float64) *map[string]float64 {
 	g := NewGraph()
 	ranks := make(map[string]float64)
 	defer g.Cleanup()
@@ -135,7 +135,7 @@ func PageRank(edges *[]Edge, damping float64) *map[string]float64 {
 		C.igraph_vss_all(), C.IGRAPH_DIRECTED, C.igraph_real_t(damping), g.weights.vec, nil)
 
 	for i := 0; i < len(g.vertices); i++ {
-		ranks[g.vertices[i].id] = float64(C.igraph_vector_e(result.vec, C.long(i)))
+		ranks[g.vertices[i].Id] = float64(C.igraph_vector_e(result.vec, C.long(i))) * multiplier
 	}
 	return &ranks
 }

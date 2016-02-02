@@ -11,5 +11,5 @@ func TestGraph(t *testing.T) {
 		Edge{"2", "1", 0.3},
 		Edge{"2", "0", 0.1},
 	}
-	PageRank(&edges, 0.85)
+	PageRank(&edges, 0.85, 1.0)
 }
