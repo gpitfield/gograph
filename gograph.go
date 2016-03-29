@@ -1,4 +1,7 @@
-// Go wrapper for iGraph
+/*
+ (very incomplete) Go wrapper for iGraph.
+This package requires installation of http://igraph.org/c/
+*/
 package gograph
 
 /*
@@ -8,10 +11,6 @@ package gograph
 #include <stdio.h>
 */
 import "C"
-
-import (
-// "fmt"
-)
 
 // Go type wrapping an igraph graph
 type Graph struct {
@@ -105,6 +104,7 @@ func (g *Graph) PopulateFromEdges(edges *[]Edge) {
 			from_id = id
 		} else {
 			vertices[el.FromId] = i
+			from_id = i
 			g.vertices = append(g.vertices, Vertex{el.FromId, i})
 			i += 1
 		}
@@ -112,16 +112,18 @@ func (g *Graph) PopulateFromEdges(edges *[]Edge) {
 			to_id = id
 		} else {
 			vertices[el.ToId] = i
+			to_id = i
 			g.vertices = append(g.vertices, Vertex{el.ToId, i})
 			i += 1
 		}
 		g.edges.SetInt(from_id, c*2)
 		g.edges.SetInt(to_id, c*2+1)
-		g.weights.SetFloat(el.Weight, i)
+		g.weights.SetFloat(el.Weight, c)
 	}
 	C.igraph_create(g.graph, g.edges.vec, 0, C.IGRAPH_DIRECTED)
 }
 
+// Calculate and return the pageranks for the given edges
 func PageRank(edges *[]Edge, damping float64, multiplier float64) *map[string]float64 {
 	g := NewGraph()
 	ranks := make(map[string]float64)
